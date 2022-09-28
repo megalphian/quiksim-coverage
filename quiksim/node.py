@@ -1,7 +1,11 @@
 class Cell:
-    def __init__(self, bottom_left, top_right):
+    def __init__(self, bottom_left, top_right, dir_x, dir_y):
         self.bottom_left = bottom_left
         self.top_right = top_right
+        self.dir_x = dir_x
+        self.dir_y = dir_y
+
+        self.cell_vec = [self.dir_x, self.dir_y]
 
         self.centroid = ((bottom_left[0] + top_right[0])/2, (bottom_left[1] + top_right[1])/2)
 
@@ -14,7 +18,7 @@ class Node:
         self.cells = list()
 
         for c in cells_list:
-            cell = Cell(c[0], c[1])
+            cell = Cell(c[0], c[1], dir_x, dir_y)
             self.cells.append(cell)
         
         # Sort cells by the 
