@@ -1,3 +1,7 @@
+from PathPlanner.main import PathPlanner
+
+from enum import Enum
+
 class Cell:
     def __init__(self, bottom_left, top_right, dir_x, dir_y):
         self.bottom_left = bottom_left
@@ -39,8 +43,44 @@ class Node:
     def get_path(self):
         return [cell.centroid for cell in self.cells]
 
-def split_nodes(nodes):
+def get_blocked_lm_nodes(nodes, iop):
+    path_planner = PathPlanner(iop)
+
+    blocked_node_groups = list()
+
+    blocked_lm_paths = list()
+    last_lm_path = None
+    last_group = []
+
+    for i in range(len(nodes)):
+        if(any([cell.occupied for cell in nodes[i].cells])):
+            if(last_lm_path is None):
+                last_lm_path = [nodes[i]]
+                last_group.append(i)
+            else:
+                _, cost = path_planner.plan_path(last_lm_path[-1].cells[-1], nodes[i].cells[0])
+                if(cost[0] <= 2 * 16):
+                    last_lm_path.append(nodes[i])
+                    last_group.append(i)
+                else:
+                    blocked_lm_paths.append(last_lm_path.copy())
+                    blocked_node_groups.append(last_group.copy())
+
+                    last_lm_path = [nodes[i]]
+                    last_group = [i]
+    
+    blocked_lm_paths.append(last_lm_path.copy())
+    blocked_node_groups.append(last_group.copy())
+
+    return blocked_lm_paths, blocked_node_groups
+
+class Reconnection_Strategy(Enum):
+    preserve_tour = 0
+    cover_individual = 1
+
+def split_nodes(nodes, recon_strat = Reconnection_Strategy.preserve_tour):
     new_nodes = list()
+
     for node in nodes:
         sub_nodes = [node]
         cell_occ = [cell.occupied for cell in node.cells]
@@ -65,5 +105,18 @@ def split_nodes(nodes):
             sub_nodes.append(new_node)
 
         new_nodes += sub_nodes
+
+    if(recon_strat == Reconnection_Strategy.cover_individual):
+        sided_nodes = [[new_nodes[0]], []]
+        same_side_ct = 0
+        side = 1
+        for i in range(1, len(new_nodes)):
+            if(same_side_ct >= 2):
+                side = 0 if side == 1 else 1
+                same_side_ct = 0
+            sided_nodes[side].append(new_nodes[i])
+            same_side_ct += 1
+        
+        new_nodes = sided_nodes[0] + sided_nodes[1]
     
     return new_nodes
