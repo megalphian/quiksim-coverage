@@ -8,7 +8,7 @@ def get_nodes_from_file(filename):
         j = json.load(file)
     
     for node_raw in j:
-        node = Node(node_raw[0], node_raw[1], node_raw[2])
+        node = Node.from_rawcells(node_raw[0], node_raw[1], node_raw[2])
         serialized_nodes.append(node)
 
     return serialized_nodes

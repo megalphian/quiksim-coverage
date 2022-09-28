@@ -1,8 +1,10 @@
 from input_manager import get_nodes_from_file
 from simulator import SimManager
 
-from visualizer import plot_initial_nodes
+from visualizer import plot_nodes
 from image_utils import convert_rgb_to_bw
+
+from node import split_nodes
 
 from PIL import Image
 
@@ -13,9 +15,13 @@ original_env = convert_rgb_to_bw(Image.open(base_dir + '/' + 'original_map.png')
 observed_env = convert_rgb_to_bw(Image.open(base_dir + '/' + 'observed_map.png'))
 
 sim_manager = SimManager(nodes, original_env)
+# plot_nodes(sim_manager.env.iop, nodes)
 
-plot_initial_nodes(sim_manager.env.iop, nodes)
+sim_manager.replan_path_for_gt(observed_env, nodes)
+plot_nodes(sim_manager.env.iop, nodes)
 
+nodes = split_nodes(nodes)
+plot_nodes(sim_manager.env.iop, nodes)
 ### DESIGN NOTES
 
 # Inputs:

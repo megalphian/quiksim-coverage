@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 from PathPlanner.main import PathPlanner
 
-def plot_initial_nodes(iop, nodes):
+def plot_nodes(iop, nodes):
     path_planner = PathPlanner(iop)
 
     fig, ax = plt.subplots()
@@ -20,9 +20,12 @@ def plot_initial_nodes(iop, nodes):
 
         t_path, cost = path_planner.plan_path(nodes[i].cells[-1], nodes[i+1].cells[0])
 
-        for i in range(1, len(t_path)-1):
-            path_x.append(t_path[i][0])
-            path_y.append(t_path[i][1])
+        if(t_path is not None):
+            for i in range(1, len(t_path)-1):
+                path_x.append(t_path[i][0])
+                path_y.append(t_path[i][1])
+        else:
+            print('Missed transition!')
 
         # print(cost)
     
