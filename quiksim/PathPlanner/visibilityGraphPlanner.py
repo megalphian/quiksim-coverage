@@ -4,7 +4,8 @@ import math
 import cv2
 import numpy as np
 from PathPlanner.debug import stdout_redirected
-from PathPlanner.plannerUtils import calculate_angle_deg, DriveType
+from PathPlanner.plannerUtils import calculate_angle_deg
+from config import DriveType
 
 import visilibity as vis
 

@@ -2,12 +2,6 @@ import math
 import numpy as np
 import vg as vec_geo
 
-from enum import Enum
-
-class DriveType(Enum):
-    acceleration_based = 0
-    velocity_based = 1
-
 def calculate_angle_deg(vector1, vector2):
     x1, y1 = vector1
     x2, y2 = vector2

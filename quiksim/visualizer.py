@@ -4,36 +4,28 @@ import matplotlib.pyplot as plt
 
 from PathPlanner.main import PathPlanner
 
-def plot_nodes(iop, nodes):
-    path_planner = PathPlanner(iop)
-
+def plot_nodes(iop, nodes, t_paths):
     fig, ax = plt.subplots()
     ax.imshow(iop)
-    path_x = list()
-    path_y = list()
 
-    for i in range(len(nodes)-1):
+    for i in range(len(nodes)):
         path_i = nodes[i].get_path()
 
-        path_x += [pt[0] for pt in path_i]
-        path_y += [pt[1] for pt in path_i]
+        path_x = [pt[0] for pt in path_i]
+        path_y = [pt[1] for pt in path_i]
 
-        t_path, cost = path_planner.plan_path(nodes[i].cells[-1], nodes[i+1].cells[0])
+        try:
+            t_path = t_paths[i]
 
-        if(t_path is not None):
-            for i in range(1, len(t_path)-1):
-                path_x.append(t_path[i][0])
-                path_y.append(t_path[i][1])
-        else:
-            print('Missed transition!')
+            if(t_path is not None):
+                for i in range(1, len(t_path)):
+                    path_x.append(t_path[i][0])
+                    path_y.append(t_path[i][1])
+            else:
+                print('Missed transition!')
+        except:
+            pass
 
-        # print(cost)
-    
-    path_i = nodes[-1].get_path()
-
-    path_x += [pt[0] for pt in path_i]
-    path_y += [pt[1] for pt in path_i]
-        
-    ax.plot(path_x, path_y)
+        ax.plot(path_x, path_y)
     
     plt.show()

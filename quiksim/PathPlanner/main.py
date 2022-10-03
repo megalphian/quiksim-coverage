@@ -1,37 +1,15 @@
 from PathPlanner.visibilityGraphPlanner import VisibilityGraphPlanner, create_cost_strategy
 
-from PathPlanner.plannerUtils import DriveType
-
-class VisGraphConfig:
-    def __init__(self):
-
-        self.erosion_kernel_size = 11
-        self.dilation_kernel_size = 3
-
-class DynamicsConfig:
-
-    def __init__(self):
-        self.drive_type = DriveType.acceleration_based
-        self.lin_vel_m = 1 # ms-1
-        self.lin_acc_m = 0.5 # ms-2
-
-        self.px_per_m = 20
-
-        self.ang_vel = 30 # deg s-1
-        # self.ang_vel = math.inf # deg s-1
-
-    def get_lin_vel(self):
-        return self.lin_vel_m * self.px_per_m
-
-    def get_lin_acc(self):
-        return self.lin_acc_m * self.px_per_m
+from config import VisGraphConfig, DynamicsConfig
 
 class PathPlanner:
 
-    def __init__(self, iop, config=VisGraphConfig()):
-        self.vg_planner = VisibilityGraphPlanner(iop, config)
+    def __init__(self, iop, 
+                    vgconfig = VisGraphConfig(), 
+                    dyn_config=DynamicsConfig()):
+        self.vg_planner = VisibilityGraphPlanner(iop, vgconfig)
 
-        self.dyn_config = DynamicsConfig()
+        self.dyn_config = dyn_config
 
     def plan_path(self, from_cell, to_cell):
         from_pt = from_cell.centroid
@@ -43,3 +21,20 @@ class PathPlanner:
         cost = self.vg_planner.calculate_cost(path, cost_strategy)
 
         return (path, cost)
+
+    def plan_transitions(self, nodes):
+        t_paths = []
+        t_costs = []
+        
+        for i in range(len(nodes)-1):
+            t_path, cost = self.plan_path(nodes[i].cells[-1], nodes[i+1].cells[0])
+            
+            t_paths.append(t_path)
+            t_costs.append(cost)
+        
+        t_path, cost = self.plan_path(nodes[-1].cells[-1], nodes[0].cells[0])
+            
+        t_paths.append(t_path)
+        t_costs.append(cost)
+
+        return t_paths, t_costs
