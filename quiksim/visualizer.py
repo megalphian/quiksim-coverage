@@ -27,5 +27,3 @@ def plot_nodes(iop, nodes, t_paths):
             pass
 
         ax.plot(path_x, path_y)
-    
-    plt.show()

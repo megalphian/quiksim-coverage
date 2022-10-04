@@ -1,5 +1,5 @@
 from robot import Robot
-from node import split_nodes, Reconnection_Strategy, get_blocked_lm_nodes
+from node import replan_lm_nodes, Reconnection_Strategy, get_blocked_lm_nodes
 
 from PathPlanner.main import PathPlanner
 from config import DynamicsConfig
@@ -29,12 +29,12 @@ class Environment:
         gt_map_px = gt_map.load()
 
         first_cell = self.cells[0]
-        px_per_cell = abs(int(first_cell.bottom_left[0]) - int(first_cell.top_right[0])) * abs(int(first_cell.bottom_left[1]) - int(first_cell.top_right[1]))
+        px_per_cell = abs(round(first_cell.bottom_left[0]) - round(first_cell.top_right[0])) * abs(round(first_cell.bottom_left[1]) - round(first_cell.top_right[1]))
 
         for cell in self.cells:
             blocked_px_per_cell = 0
-            for x in range(int(cell.bottom_left[0]), int(cell.top_right[0])):
-                for y in range(int(cell.bottom_left[1]), int(cell.top_right[1])):
+            for x in range(round(cell.bottom_left[0]), round(cell.top_right[0])):
+                for y in range(round(cell.bottom_left[1]), round(cell.top_right[1])):
                     if(gt_map_px[x,y] == 0):
                         blocked_px_per_cell += 1
             
@@ -69,8 +69,8 @@ class SimManager:
         lm_paths, node_groups = get_blocked_lm_nodes(nodes, self.env.initial_iop)
         repaired_paths = []
         for path in lm_paths:
-            repaired_paths.append(split_nodes(path, Reconnection_Strategy.preserve_tour))
-            # repaired_paths.append(split_nodes(path))
+            repaired_paths.append(replan_lm_nodes(path, Reconnection_Strategy.preserve_tour))
+            # repaired_paths.append(replan_lm_nodes(path))
 
         start_id = 0
         grouped_nodes = []

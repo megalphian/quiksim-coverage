@@ -88,7 +88,7 @@ class Reconnection_Strategy(Enum):
     preserve_tour = 0
     cover_individual = 1
 
-def split_nodes(nodes, recon_strat = Reconnection_Strategy.preserve_tour):
+def replan_lm_nodes(nodes, recon_strat = Reconnection_Strategy.preserve_tour):
     new_nodes = list()
 
     is_even = (len(nodes) % 2) == 0

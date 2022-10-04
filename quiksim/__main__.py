@@ -30,6 +30,8 @@ plot_nodes(sim_manager.env.current_iop, nodes, t_paths)
 
 sim_manager.env.current_iop.save('final_iop.png')
 
+plt.show()
+
 ### DESIGN NOTES
 
 # Inputs:
