@@ -90,6 +90,7 @@ class Reconnection_Strategy(Enum):
 
 def replan_lm_nodes(nodes, recon_strat = Reconnection_Strategy.preserve_tour):
     new_nodes = list()
+    grouped_subnodes = list()
 
     is_even = (len(nodes) % 2) == 0
 
@@ -117,23 +118,34 @@ def replan_lm_nodes(nodes, recon_strat = Reconnection_Strategy.preserve_tour):
             sub_nodes.append(new_node)
 
         new_nodes += sub_nodes
+        grouped_subnodes.append(sub_nodes)
 
     if(recon_strat == Reconnection_Strategy.cover_individual):
-        sided_nodes = [[new_nodes[0]], []]
+        
+        # Clear new nodes
+        new_nodes = []
 
-        same_side_ct = 0
-        side = 1
-        for i in range(1, len(new_nodes) - is_even):
-            if(same_side_ct >= 2):
-                side = 0 if side == 1 else 1
-                same_side_ct = 0
-            sided_nodes[side].append(new_nodes[i])
-            same_side_ct += 1
-        
-        temp_nodes = sided_nodes[0] + sided_nodes[1]
-        if(is_even):
-            temp_nodes += [new_nodes[-1]]
-        
-        new_nodes = temp_nodes
+        group_lengths = [len(group) for group in grouped_subnodes]
+        max_group_len = max(group_lengths)
+
+        print(group_lengths)
+
+        if(any([not(length == max_group_len) for length in group_lengths])):
+            print('Individual strategy cannot be applied properly for this blockage')
+
+        else:
+            popped_group = None
+            if(is_even):
+                popped_group = grouped_subnodes.pop(-1)
+            
+            # reverse every other group
+            for i in range(1, len(grouped_subnodes), 2):
+                grouped_subnodes[i].reverse()
+            
+            for i in range(max_group_len):
+                new_nodes += [group[i] for group in grouped_subnodes]
+
+            if(popped_group):
+                new_nodes += popped_group
     
     return new_nodes

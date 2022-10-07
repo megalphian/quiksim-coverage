@@ -19,12 +19,12 @@ class Environment:
         iop_px = iop.load()
 
         for cell in cells:
-            for x in range(int(cell.bottom_left[0]), int(cell.top_right[0])):
-                for y in range(int(cell.bottom_left[1]), int(cell.top_right[1])):
+            for x in range(round(cell.bottom_left[0]), round(cell.top_right[0])):
+                for y in range(round(cell.bottom_left[1]), round(cell.top_right[1])):
                     iop_px[x,y] = 255
         return iop
     
-    def update_gt(self, gt_map):
+    def update_gt(self, gt_map, threshold):
         iop_px = self.current_iop.load()
         gt_map_px = gt_map.load()
 
@@ -38,7 +38,7 @@ class Environment:
                     if(gt_map_px[x,y] == 0):
                         blocked_px_per_cell += 1
             
-            if(blocked_px_per_cell/px_per_cell > 0):
+            if(blocked_px_per_cell/px_per_cell > threshold):
                 cell.occupied = True
                 for x in range(int(cell.bottom_left[0]), int(cell.top_right[0])):
                     for y in range(int(cell.bottom_left[1]), int(cell.top_right[1])):
@@ -50,7 +50,7 @@ class PlanStep:
         self.orientation = None
 
 class SimManager:
-    def __init__(self, init_nodes, base_env):
+    def __init__(self, init_nodes, base_env, iop_threshold):
         # We have 2 environments, (i) intiial and (ii) ground truth
         # The initial can be used to create the robot's env representation
         # The ground truth will dictate the robot's observations.
@@ -62,14 +62,16 @@ class SimManager:
 
         self.dynamics = DynamicsConfig()
 
+        self.iop_threshold = iop_threshold
+
     def replan_path_for_gt(self, observed_env, nodes):
-        self.env.update_gt(observed_env)
+        self.env.update_gt(observed_env, self.iop_threshold)
 
         # Get blocked nodes and replan
         lm_paths, node_groups = get_blocked_lm_nodes(nodes, self.env.initial_iop)
         repaired_paths = []
         for path in lm_paths:
-            repaired_paths.append(replan_lm_nodes(path, Reconnection_Strategy.preserve_tour))
+            repaired_paths.append(replan_lm_nodes(path, Reconnection_Strategy.cover_individual))
             # repaired_paths.append(replan_lm_nodes(path))
 
         start_id = 0
@@ -88,19 +90,22 @@ class SimManager:
             grouped_nodes[2*i + 1] = repaired_paths[i]
 
         nodes = list(itertools.chain.from_iterable(grouped_nodes))
-        t_paths, t_costs, total_cost = self.connect_and_evaluate_nodes(nodes)
+        t_paths, t_costs, total_cost, total_len = self.connect_and_evaluate_nodes(nodes)
 
-        return nodes, t_paths, t_costs, total_cost
+        return nodes, t_paths, t_costs, total_cost, total_len
 
     def connect_and_evaluate_nodes(self, nodes):
         path_planner = PathPlanner(self.env.current_iop, dyn_config=self.dynamics)
 
         t_paths, t_costs = path_planner.plan_transitions(nodes)
 
-        total_node_cost = sum([node.get_length() for node in nodes]) / self.dynamics.get_lin_vel()
-        total_cost = sum([cost[1] for cost in t_costs]) + total_node_cost
+        total_node_length = sum([node.get_length() for node in nodes])
+        total_node_cost = total_node_length / self.dynamics.get_lin_vel()
 
-        return t_paths, t_costs, total_cost
+        total_cost = sum([cost[1] for cost in t_costs]) + total_node_cost
+        total_length = sum([cost[0] for cost in t_costs]) + total_node_length
+
+        return t_paths, t_costs, total_cost, total_length
 
 
     def execute_plan(self, plan_steps):

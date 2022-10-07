@@ -4,9 +4,11 @@ import matplotlib.pyplot as plt
 
 from PathPlanner.main import PathPlanner
 
-def plot_nodes(iop, nodes, t_paths):
+def plot_nodes(iop, nodes, t_paths, base_img = None):
     fig, ax = plt.subplots()
-    ax.imshow(iop)
+    if(base_img is None):
+        base_img = iop
+    ax.imshow(base_img)
 
     for i in range(len(nodes)):
         path_i = nodes[i].get_path()
