@@ -3,6 +3,7 @@ from node import replan_lm_nodes, Reconnection_Strategy, get_blocked_lm_nodes
 
 from PathPlanner.main import PathPlanner
 from config import DynamicsConfig
+from timeTracker import TimeTracker
 
 from PIL import Image
 
@@ -64,15 +65,28 @@ class SimManager:
 
         self.iop_threshold = iop_threshold
 
+        self.path_planner = PathPlanner(self.env.current_iop, dyn_config=self.dynamics)
+
     def replan_path_for_gt(self, observed_env, nodes):
+
+        replan_timer = TimeTracker()
+
         self.env.update_gt(observed_env, self.iop_threshold)
+
+        replan_timer.start_timer()
+
+        ### 1. Cluster and Repair
 
         # Get blocked nodes and replan
         lm_paths, node_groups = get_blocked_lm_nodes(nodes, self.env.initial_iop)
         repaired_paths = []
         for path in lm_paths:
-            repaired_paths.append(replan_lm_nodes(path, Reconnection_Strategy.cover_individual))
+            repaired_paths.append(replan_lm_nodes(path, self.path_planner, Reconnection_Strategy.cover_individual))
             # repaired_paths.append(replan_lm_nodes(path))
+
+        local_replan_time = replan_timer.print_timed_message('LM paths repaired.')
+
+        ### 2. Reconnect to tour
 
         start_id = 0
         grouped_nodes = []
@@ -90,23 +104,14 @@ class SimManager:
             grouped_nodes[2*i + 1] = repaired_paths[i]
 
         nodes = list(itertools.chain.from_iterable(grouped_nodes))
-        t_paths, t_costs, total_cost, total_len = self.connect_and_evaluate_nodes(nodes)
 
-        return nodes, t_paths, t_costs, total_cost, total_len
+        tour_time = replan_timer.print_timed_message('Tour complete.') - local_replan_time
 
-    def connect_and_evaluate_nodes(self, nodes):
-        path_planner = PathPlanner(self.env.current_iop, dyn_config=self.dynamics)
 
-        t_paths, t_costs = path_planner.plan_transitions(nodes)
+        ### 3. Evaluate
+        t_paths, t_costs, total_cost, total_len = self.path_planner.connect_and_evaluate_nodes(nodes)
 
-        total_node_length = sum([node.get_length() for node in nodes])
-        total_node_cost = total_node_length / self.dynamics.get_lin_vel()
-
-        total_cost = sum([cost[1] for cost in t_costs]) + total_node_cost
-        total_length = sum([cost[0] for cost in t_costs]) + total_node_length
-
-        return t_paths, t_costs, total_cost, total_length
-
+        return nodes, t_paths, (t_costs, total_cost, total_len), (local_replan_time, tour_time)
 
     def execute_plan(self, plan_steps):
         # plan_steps: PlanStep[]

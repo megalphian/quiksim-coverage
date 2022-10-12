@@ -3,6 +3,8 @@ from PathPlanner.main import PathPlanner
 from enum import Enum
 import math
 
+from config import DriveType
+
 class Cell:
     def __init__(self, bottom_left, top_right, dir_x, dir_y):
         self.bottom_left = bottom_left
@@ -53,6 +55,35 @@ class Node:
 
         return length
 
+    def get_time_to_cover(self, dynamics):
+        # lin_vel => px/s
+        # lin_acc => px/s^2
+        # s = ut + (at^2)/2
+        # v^2 = u^2 + 2as
+        # v = u + at
+
+        # copied over from visibilityGraphPlanner and not cleaned up for time sake
+        # Suggestions: Make this a strategy too and use a common method
+
+        lin_vel = dynamics.get_lin_vel()
+        lin_acc = dynamics.get_lin_acc()
+
+        length = self.get_length()
+
+        if(dynamics.drive_type == DriveType.acceleration_based):
+            s1 = length / 2
+            s2 = (lin_vel**2) / (2 * lin_acc)
+            if(s1 >= s2):
+                s3 = s1 - s2
+                time = 2 * ((s3 / lin_vel) + (lin_vel / lin_acc))
+            else:
+                time = 2 * math.sqrt((2 * s1) / lin_acc)
+        
+        elif(dynamics.drive_type==DriveType.velocity_based):
+            time = length/lin_vel
+        
+        return time
+
 def get_blocked_lm_nodes(nodes, iop):
     path_planner = PathPlanner(iop)
 
@@ -88,7 +119,25 @@ class Reconnection_Strategy(Enum):
     preserve_tour = 0
     cover_individual = 1
 
-def replan_lm_nodes(nodes, recon_strat = Reconnection_Strategy.preserve_tour):
+def get_group_to_pop(grouped_nodes, path_planner):
+    ###
+    # Returns: index
+    # index: Index of the group to be popped for the replan (Values: 0, -1)
+    ###
+
+    first_group_eval = path_planner.connect_and_evaluate_nodes(grouped_nodes[0])
+    last_group_eval = path_planner.connect_and_evaluate_nodes(grouped_nodes[-1])
+
+    first_t_cost = sum([cost[1] for cost in first_group_eval[1]])
+    last_t_cost = sum([cost[1] for cost in first_group_eval[1]])
+
+    if(first_t_cost < last_t_cost):
+        return 0
+    
+    return -1
+
+
+def replan_lm_nodes(nodes, path_planner, recon_strat = Reconnection_Strategy.preserve_tour):
     new_nodes = list()
     grouped_subnodes = list()
 
@@ -128,15 +177,20 @@ def replan_lm_nodes(nodes, recon_strat = Reconnection_Strategy.preserve_tour):
         group_lengths = [len(group) for group in grouped_subnodes]
         max_group_len = max(group_lengths)
 
-        print(group_lengths)
+        # print(group_lengths)
 
         if(any([not(length == max_group_len) for length in group_lengths])):
             print('Individual strategy cannot be applied properly for this blockage')
 
         else:
             popped_group = None
+            popped_index = None
             if(is_even):
-                popped_group = grouped_subnodes.pop(-1)
+                popped_index = get_group_to_pop(grouped_subnodes, path_planner)
+                popped_group = grouped_subnodes.pop(popped_index)
+            
+            if(popped_group and popped_index == 0):
+                new_nodes += popped_group
             
             # reverse every other group
             for i in range(1, len(grouped_subnodes), 2):
@@ -145,7 +199,7 @@ def replan_lm_nodes(nodes, recon_strat = Reconnection_Strategy.preserve_tour):
             for i in range(max_group_len):
                 new_nodes += [group[i] for group in grouped_subnodes]
 
-            if(popped_group):
+            if(popped_group and popped_index == -1):
                 new_nodes += popped_group
     
     return new_nodes
