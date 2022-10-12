@@ -171,8 +171,7 @@ def replan_lm_nodes(nodes, path_planner, recon_strat = Reconnection_Strategy.pre
 
     if(recon_strat == Reconnection_Strategy.cover_individual):
         
-        # Clear new nodes
-        new_nodes = []
+        
 
         group_lengths = [len(group) for group in grouped_subnodes]
         max_group_len = max(group_lengths)
@@ -183,6 +182,9 @@ def replan_lm_nodes(nodes, path_planner, recon_strat = Reconnection_Strategy.pre
             print('Individual strategy cannot be applied properly for this blockage')
 
         else:
+            # Clear new nodes
+            new_nodes = []
+
             popped_group = None
             popped_index = None
             if(is_even):
