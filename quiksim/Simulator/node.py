@@ -30,6 +30,9 @@ class Node:
             node = Node.from_rawcells(node_raw[0], node_raw[1], node_raw[2])
             serialized_nodes.append(node)
 
+        if(serialized_nodes[0] == serialized_nodes[-1]):
+            serialized_nodes.pop(-1)
+
         return serialized_nodes
 
     def __init__(self, cells):
@@ -47,6 +50,13 @@ class Node:
         elif(self.dir_x == 0):
             is_reverse = self.dir_y == -1
             self.cells = sorted(self.cells, key=lambda x: x.centroid[1], reverse=is_reverse)
+
+    def __eq__(self, other):
+        if(isinstance(other, Node) and (other.dir_x == self.dir_x and other.dir_y == self.dir_y)):
+            return (other.cells[0].centroid == self.cells[0].centroid 
+                    and other.cells[-1].centroid == self.cells[-1].centroid)
+        
+        return False
 
     @classmethod
     def from_rawcells(cls, dir_x, dir_y, raw_cell_list):
