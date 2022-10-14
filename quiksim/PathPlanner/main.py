@@ -64,7 +64,6 @@ class PathPlanner:
         total_cost = sum([cost[1] for cost in t_costs]) + total_node_cost
         total_length = (sum([cost[0] for cost in t_costs]) + total_node_length) / self.dyn_config.px_per_m
 
-        print(total_node_cost)
-        print(sum([cost[1] for cost in t_costs]))
+        total_angle = (sum([cost[3] for cost in t_costs]))
 
-        return t_paths, t_costs, total_cost, total_length
+        return t_paths, t_costs, total_cost, total_length, total_angle

@@ -8,7 +8,7 @@ from PIL import Image
 
 import yaml 
 
-# base_dir = '52119'
+base_dir = '52119'
 base_dir = 'Map-9'
 
 nodes = Node.get_nodes_from_file(base_dir + '/' + 'serialized_nodes.txt')
@@ -27,17 +27,19 @@ plt.imshow(observed_env)
 
 sim_manager = SimManager(nodes, original_env, map_params['iop_threshold'])
 
-t_paths, _, initial_cost, initial_len = sim_manager.path_planner.connect_and_evaluate_nodes(nodes)
+t_paths, _, initial_cost, initial_len, total_turn = sim_manager.path_planner.connect_and_evaluate_nodes(nodes)
 print("Initial Path cost:", initial_cost)
 print("Initial Path len:", initial_len)
+print("Initial Turn Angle:", total_turn)
 
 plot_nodes(sim_manager.env.current_iop, nodes, t_paths)
 
 # sim_manager.env.update_gt(observed_env, map_params['iop_threshold'])
-nodes, t_paths, (t_costs, total_cost, total_len), (local_replan_time, tour_time) = sim_manager.replan_path_for_gt(observed_env, nodes)
+nodes, t_paths, (t_costs, total_cost, total_len, total_turn), (local_replan_time, tour_time) = sim_manager.replan_path_for_gt(observed_env, nodes)
 
 print("Total Replanned Cost:", total_cost)
 print("Total Replanned len:", total_len)
+print("Total Turn:", total_turn)
 
 print("Local Replan Time:", local_replan_time)
 print("Tour Reintegration Time:", tour_time)

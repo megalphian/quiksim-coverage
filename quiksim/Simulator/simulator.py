@@ -109,9 +109,9 @@ class SimManager:
 
 
         ### 3. Evaluate
-        t_paths, t_costs, total_cost, total_len = self.path_planner.connect_and_evaluate_nodes(nodes)
+        t_paths, t_costs, total_cost, total_len, total_angle = self.path_planner.connect_and_evaluate_nodes(nodes)
 
-        return nodes, t_paths, (t_costs, total_cost, total_len), (local_replan_time, tour_time)
+        return nodes, t_paths, (t_costs, total_cost, total_len, total_angle), (local_replan_time, tour_time)
 
     def execute_plan(self, plan_steps):
         # plan_steps: PlanStep[]
