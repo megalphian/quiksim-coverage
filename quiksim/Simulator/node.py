@@ -37,15 +37,15 @@ class Node:
         assert(len(cells) > 0)
         self.cells = cells
 
-        dir_x = cells[0].dir_x
-        dir_y = cells[0].dir_y
+        self.dir_x = cells[0].dir_x
+        self.dir_y = cells[0].dir_y
         
         # Sort cells by the 
-        if(dir_y == 0):
-            is_reverse = dir_x == -1
+        if(self.dir_y == 0):
+            is_reverse = self.dir_x == -1
             self.cells = sorted(self.cells, key=lambda x: x.centroid[0], reverse=is_reverse)
-        elif(dir_x == 0):
-            is_reverse = dir_y == -1
+        elif(self.dir_x == 0):
+            is_reverse = self.dir_y == -1
             self.cells = sorted(self.cells, key=lambda x: x.centroid[1], reverse=is_reverse)
 
     @classmethod
