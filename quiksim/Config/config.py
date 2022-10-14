@@ -13,7 +13,7 @@ class VisGraphConfig:
 class DynamicsConfig:
 
     def __init__(self):
-        self.drive_type = DriveType.acceleration_based
+        self.drive_type = DriveType.velocity_based
         self.lin_vel_m = 1 # ms-1
         self.lin_acc_m = 0.5 # ms-2
 
