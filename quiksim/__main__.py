@@ -1,8 +1,8 @@
-from input_manager import get_nodes_from_file
-from simulator import SimManager
+from Simulator.node import Node
+from Simulator.simulator import SimManager
 
-from visualizer import plot_nodes
-from image_utils import convert_rgb_to_bw
+from Utils.visualizer import plot_nodes
+from Utils.image_utils import convert_rgb_to_bw
 
 from PIL import Image
 
@@ -11,7 +11,7 @@ import yaml
 # base_dir = '52119'
 base_dir = 'Map-9'
 
-nodes = get_nodes_from_file(base_dir + '/' + 'serialized_nodes.txt')
+nodes = Node.get_nodes_from_file(base_dir + '/' + 'serialized_nodes.txt')
 original_env = convert_rgb_to_bw(Image.open(base_dir + '/' + 'original_map.png'))
 observed_env = convert_rgb_to_bw(Image.open(base_dir + '/' + 'observed_map-multi.png'))
 

@@ -1,6 +1,6 @@
 from PathPlanner.visibilityGraphPlanner import VisibilityGraphPlanner, create_cost_strategy
 
-from config import VisGraphConfig, DynamicsConfig
+from Config.config import VisGraphConfig, DynamicsConfig
 
 class PathPlanner:
 

@@ -1,9 +1,9 @@
-from PathPlanner.main import PathPlanner
-
 from enum import Enum
 import math
+import json
 
-from config import DriveType
+from PathPlanner.main import PathPlanner
+from Config.config import DriveType
 
 class Cell:
     def __init__(self, bottom_left, top_right, dir_x, dir_y):
@@ -19,6 +19,19 @@ class Cell:
         self.occupied = False
 
 class Node:
+    @staticmethod
+    def get_nodes_from_file(filename):
+        serialized_nodes = list()
+
+        with open(filename, encoding='utf-8') as file:
+            j = json.load(file)
+        
+        for node_raw in j:
+            node = Node.from_rawcells(node_raw[0], node_raw[1], node_raw[2])
+            serialized_nodes.append(node)
+
+        return serialized_nodes
+
     def __init__(self, cells):
         
         assert(len(cells) > 0)

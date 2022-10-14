@@ -1,9 +1,9 @@
-from robot import Robot
-from node import replan_lm_nodes, Reconnection_Strategy, get_blocked_lm_nodes
+from Simulator.robot import Robot
+from Simulator.node import replan_lm_nodes, Reconnection_Strategy, get_blocked_lm_nodes
 
 from PathPlanner.main import PathPlanner
-from config import DynamicsConfig
-from timeTracker import TimeTracker
+from Config.config import DynamicsConfig
+from Utils.timeTracker import TimeTracker
 
 from PIL import Image
 

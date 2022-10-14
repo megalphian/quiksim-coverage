@@ -2,8 +2,6 @@ from PIL import Image
 
 import matplotlib.pyplot as plt
 
-from PathPlanner.main import PathPlanner
-
 def plot_nodes(iop, nodes, t_paths, base_img = None):
     fig, ax = plt.subplots()
     if(base_img is None):
