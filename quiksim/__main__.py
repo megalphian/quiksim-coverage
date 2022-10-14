@@ -8,7 +8,7 @@ from PIL import Image
 
 import yaml 
 
-base_dir = '52119'
+# base_dir = '52119'
 base_dir = 'Map-9'
 
 nodes = Node.get_nodes_from_file(base_dir + '/' + 'serialized_nodes.txt')
